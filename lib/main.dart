@@ -1,6 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import 'chart/y_axis_scale.dart';
+
 void main() {
   runApp(const LineChartDemoApp());
 }
@@ -35,6 +37,8 @@ class LineChartDemoApp extends StatelessWidget {
 class LineChartSample extends StatelessWidget {
   const LineChartSample({super.key});
 
+  static const int _yAxisSplitCount = 5;
+
   static const List<_MonthlyValue> _monthlyValues = <_MonthlyValue>[
     _MonthlyValue(x: 0, month: 'Jan', value: 10),
     _MonthlyValue(x: 1, month: 'Feb', value: 25),
@@ -52,6 +56,11 @@ class LineChartSample extends StatelessWidget {
       _monthlyValues.fold<int>(0, (sum, item) => sum + item.value);
 
   double get _average => _total / _monthlyValues.length;
+
+  YAxisScale get _yAxisScale => buildYAxisScale(
+    values: _monthlyValues.map((item) => item.value),
+    splitCount: _yAxisSplitCount,
+  );
 
   _MonthlyValue get _highestPoint => _monthlyValues.reduce(
     (current, next) => current.value >= next.value ? current : next,
@@ -217,15 +226,17 @@ class LineChartSample extends StatelessWidget {
   }
 
   LineChartData _buildChartData(ThemeData theme) {
+    final YAxisScale yAxisScale = _yAxisScale;
+
     return LineChartData(
       minX: 0,
-      maxX: 5,
+      maxX: _monthlyValues.length - 1,
       minY: 0,
-      maxY: 100,
+      maxY: yAxisScale.maxY,
       gridData: FlGridData(
         show: true,
         drawVerticalLine: false,
-        horizontalInterval: 20,
+        horizontalInterval: yAxisScale.interval,
         getDrawingHorizontalLine: (double value) {
           return FlLine(
             color: const Color(0xFFE2E8F0),
@@ -242,7 +253,7 @@ class LineChartSample extends StatelessWidget {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: 20,
+            interval: yAxisScale.interval,
             reservedSize: 42,
             getTitlesWidget: leftTitleWidgets,
           ),
